@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script src="coi-serviceworker.js"></script>
 <title>VManStudios Compressor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -958,8 +959,8 @@
   "use strict";
 
   var LIB_URLS = [
-    'https://unpkg.com/@ffmpeg/[email protected]/dist/ffmpeg.min.js',
-    'https://cdn.jsdelivr.net/npm/@ffmpeg/[email protected]/dist/ffmpeg.min.js'
+    'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js',
+    'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'
   ];
   var CORE_URLS = [
     'https://unpkg.com/@ffmpeg/[email protected]/dist/ffmpeg-core.js',
@@ -1264,6 +1265,7 @@
     }
     try{
       ffmpeg = FFmpeg.createFFmpeg({
+        mainName:'main',
         corePath: CORE_URLS[i],
         log:false,
         logger:function(entry){ log(entry.message || ''); },
@@ -1286,6 +1288,12 @@
     progressPct.textContent = '';
     var cachedBefore = localStorage.getItem(CACHE_KEY) === '1';
     progressLabel.textContent = cachedBefore ? 'Loading engine (cached)\u2026' : 'Loading engine \u2014 first run only\u2026';
+
+    if(window.crossOriginIsolated === false){
+      log('crossOriginIsolated is false \u2014 the isolation service worker may not have taken control yet. If this is your first visit to this deployment, reload the page once.', true);
+    } else if(window.crossOriginIsolated === true){
+      log('crossOriginIsolated is true \u2014 isolation headers are active.');
+    }
 
     return loadLib().then(function(){
       return loadCoreWithFallback();
